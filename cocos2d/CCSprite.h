@@ -32,6 +32,7 @@
 @class CCSpriteBatchNode;
 @class CCSpriteFrame;
 @class CCAnimation;
+@class CCEffectRenderer;
 
 /// The four CCVertexes of a sprite.
 /// Bottom left, bottom right, top right, top left.
@@ -54,7 +55,14 @@ typedef struct CCSpriteTexCoordSet {
  
  The default anchorPoint in CCSprite is (0.5, 0.5).
  */
-@interface CCSprite : CCNode <CCTextureProtocol, CCShaderProtocol, CCBlendProtocol, CCEffectProtocol>
+@interface CCSprite : CCNode <CCTextureProtocol, CCShaderProtocol, CCBlendProtocol, CCEffectProtocol> {
+@public
+    CCEffectRenderer *_effectRenderer;
+
+    // Vertex coords, texture coords and color info.
+    CCSpriteVertexes _verts;
+
+}
 
 /// -----------------------------------------------------------------------
 /// @name Creating a Sprite with an Image File or Sprite Frame Name

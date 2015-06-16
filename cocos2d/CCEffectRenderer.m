@@ -273,6 +273,9 @@ static GLKVector2 selectTexCoordPadding(CCEffectTexCoordSource tcSource, GLKVect
         CCEffectTexCoordFunc tc2 = selectTexCoordFunc(renderPass.texCoord2Mapping, CCEffectTexCoordSource2, fromIntermediate, padMainTexCoords);
         
         CCSpriteVertexes paddedVerts = padVertices(sprite.vertexes, effect.padding, tc1, tc2);
+        if(isnan(paddedVerts.bl.texCoord1.x) || isnan(paddedVerts.bl.texCoord1.y)) {
+            paddedVerts = (*sprite.vertexes);
+        }
         [renderPassInputs setVertsWorkAround:&paddedVerts];
         
         renderPassInputs.texCoord1Center = GLKVector2Make((sprite.vertexes->tr.texCoord1.s + sprite.vertexes->bl.texCoord1.s) * 0.5f, (sprite.vertexes->tr.texCoord1.t + sprite.vertexes->bl.texCoord1.t) * 0.5f);

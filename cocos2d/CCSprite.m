@@ -41,6 +41,7 @@
 #import "CCRenderer_Private.h"
 #import "CCSprite_Private.h"
 #import "CCTexture_Private.h"
+#import "CCEffectRenderer.h"
 
 #pragma mark -
 #pragma mark CCSprite
@@ -472,14 +473,14 @@
 
 -(void) setNormalMapSpriteFrame:(CCSpriteFrame*)frame
 {
-    if (!self.texture)
-    {
-        // If there is no texture set on the sprite, set the sprite's texture rect from the
-        // normal map's sprite frame. Note that setting the main texture, then the normal map,
-        // and then removing the main texture will leave the texture rect from the main texture.
-        [self setTextureRect:frame.rect forTexture:frame.texture rotated:frame.rotated untrimmedSize:frame.originalSize];
-    }
-
+//    if (!self.texture)
+//    {
+//        // If there is no texture set on the sprite, set the sprite's texture rect from the
+//        // normal map's sprite frame. Note that setting the main texture, then the normal map,
+//        // and then removing the main texture will leave the texture rect from the main texture.
+//        [self setTextureRect:frame.rect forTexture:frame.texture rotated:frame.rotated untrimmedSize:frame.originalSize];
+//    }
+//
     // Set the second texture coordinate set from the normal map's sprite frame.
     CCSpriteTexCoordSet texCoords = [CCSprite textureCoordsForTexture:frame.texture withRect:frame.rect rotated:frame.rotated xFlipped:_flipX yFlipped:_flipY];
     _verts.bl.texCoord2 = texCoords.bl;
