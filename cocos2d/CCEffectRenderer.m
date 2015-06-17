@@ -439,12 +439,15 @@ CCEffectTexCoordFunc selectTexCoordFunc(CCEffectTexCoordMapping mapping, CCEffec
 
 CCSpriteVertexes padVertices(const CCSpriteVertexes *input, CGSize padding, CCEffectTexCoordFunc tc1, CCEffectTexCoordFunc tc2)
 {
-    GLKVector2 tc1Padding = GLKVector2Make(padding.width * (input->br.texCoord1.s - input->bl.texCoord1.s) / (input->br.position.x - input->bl.position.x),
-                                           padding.height * (input->tl.texCoord1.t - input->bl.texCoord1.t) / (input->tl.position.y - input->bl.position.y));
-    GLKVector2 tc2Padding = GLKVector2Make(padding.width * (input->br.texCoord2.s - input->bl.texCoord2.s) / (input->br.position.x - input->bl.position.x),
-                                           padding.height * (input->tl.texCoord2.t - input->bl.texCoord2.t) / (input->tl.position.y - input->bl.position.y));
+//    GLKVector2 tc1Padding = GLKVector2Make(padding.width * (input->br.texCoord1.s - input->bl.texCoord1.s) / (input->br.position.x - input->bl.position.x),
+//                                           padding.height * (input->tl.texCoord1.t - input->bl.texCoord1.t) / (input->tl.position.y - input->bl.position.y));
+//    GLKVector2 tc2Padding = GLKVector2Make(padding.width * (input->br.texCoord2.s - input->bl.texCoord2.s) / (input->br.position.x - input->bl.position.x),
+//                                           padding.height * (input->tl.texCoord2.t - input->bl.texCoord2.t) / (input->tl.position.y - input->bl.position.y));
 
-    
+    GLKVector2 tc1Padding = GLKVector2Make(0, 0);
+    GLKVector2 tc2Padding = GLKVector2Make(0, 0);
+
+
     CCSpriteVertexes output;
 
     output.bl.position = padVertexPosition(input->bl.position, GLKVector2Make(-padding.width, -padding.height));
