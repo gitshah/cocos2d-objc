@@ -273,15 +273,17 @@ static GLKVector2 selectTexCoordPadding(CCEffectTexCoordSource tcSource, GLKVect
         CCEffectTexCoordFunc tc2 = selectTexCoordFunc(renderPass.texCoord2Mapping, CCEffectTexCoordSource2, fromIntermediate, padMainTexCoords);
         
         CCSpriteVertexes paddedVerts = padVertices(sprite.vertexes, effect.padding, tc1, tc2);
-        if(isnan(paddedVerts.bl.texCoord1.x) || isnan(paddedVerts.bl.texCoord1.y)) {
+        if(YES || isnan(paddedVerts.bl.texCoord1.x) || isnan(paddedVerts.bl.texCoord1.y)) {
             paddedVerts = (*sprite.vertexes);
         }
         [renderPassInputs setVertsWorkAround:&paddedVerts];
         
-        renderPassInputs.texCoord1Center = GLKVector2Make((sprite.vertexes->tr.texCoord1.s + sprite.vertexes->bl.texCoord1.s) * 0.5f, (sprite.vertexes->tr.texCoord1.t + sprite.vertexes->bl.texCoord1.t) * 0.5f);
-        renderPassInputs.texCoord1Extents = GLKVector2Make(fabsf(sprite.vertexes->tr.texCoord1.s - sprite.vertexes->bl.texCoord1.s) * 0.5f, fabsf(sprite.vertexes->tr.texCoord1.t - sprite.vertexes->bl.texCoord1.t) * 0.5f);
-        renderPassInputs.texCoord2Center = GLKVector2Make((sprite.vertexes->tr.texCoord2.s + sprite.vertexes->bl.texCoord2.s) * 0.5f, (sprite.vertexes->tr.texCoord2.t + sprite.vertexes->bl.texCoord2.t) * 0.5f);
-        renderPassInputs.texCoord2Extents = GLKVector2Make(fabsf(sprite.vertexes->tr.texCoord2.s - sprite.vertexes->bl.texCoord2.s) * 0.5f, fabsf(sprite.vertexes->tr.texCoord2.t - sprite.vertexes->bl.texCoord2.t) * 0.5f);
+        renderPassInputs.texCoord1Center = GLKVector2Make((sprite.vertexes->br.texCoord1.s + sprite.vertexes->bl.texCoord1.s) * 0.5f, (sprite.vertexes->tr.texCoord1.t + sprite.vertexes->bl.texCoord1.t) * 0.5f);
+        renderPassInputs.texCoord1Extents = GLKVector2Make(fabsf(sprite.vertexes->br.texCoord1.s) * 0.5f, fabsf(sprite.vertexes->tr.texCoord1.t) * 0.5f);
+        renderPassInputs.texCoord2Center = renderPassInputs.texCoord1Center;
+////        GLKVector2Make((sprite.vertexes->tr.texCoord2.s + sprite.vertexes->bl.texCoord2.s) * 0.5f, (sprite.vertexes->tr.texCoord2.t + sprite.vertexes->bl.texCoord2.t) * 0.5f);
+        renderPassInputs.texCoord2Extents = renderPassInputs.texCoord1Extents;
+////        GLKVector2Make(fabsf(sprite.vertexes->tr.texCoord2.s - sprite.vertexes->bl.texCoord2.s) * 0.5f, fabsf(sprite.vertexes->tr.texCoord2.t - sprite.vertexes->bl.texCoord2.t) * 0.5f);
 
         renderPassInputs.needsClear = !toFramebuffer;
         renderPassInputs.shaderUniforms = uniforms;
