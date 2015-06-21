@@ -329,6 +329,11 @@
 	return &_verts;
 }
 
+-(const CCSpriteTriangleVertexes *)triangleVertices
+{
+	return &_triangleVertices;
+}
+
 - (CGAffineTransform)nodeToTextureTransform
 {
     CGFloat sx = (_verts.br.texCoord1.s - _verts.bl.texCoord1.s) / (_verts.br.position.x - _verts.bl.position.x);

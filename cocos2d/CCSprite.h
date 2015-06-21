@@ -40,6 +40,10 @@ typedef struct CCSpriteVertexes {
 	CCVertex bl, br, tr, tl;
 } CCSpriteVertexes;
 
+typedef struct CCSpriteTriangleVertexes {
+	CCVertex v1, v2, v3;
+} CCSpriteTriangleVertexes;
+
 /// A set of four texture coordinates corresponding to the four
 /// vertices of a sprite. 
 typedef struct CCSpriteTexCoordSet {
@@ -61,6 +65,8 @@ typedef struct CCSpriteTexCoordSet {
 
     // Vertex coords, texture coords and color info.
     CCSpriteVertexes _verts;
+    CCSpriteTriangleVertexes _triangleVertices;
+    BOOL _renderTriangles;
 
 }
 
@@ -255,6 +261,7 @@ typedef struct CCSpriteTexCoordSet {
 /// -----------------------------------------------------------------------
 
 @property (nonatomic, readonly) const CCSpriteVertexes *vertexes;
+@property (nonatomic, readonly) const CCSpriteTriangleVertexes *triangleVertices;
 
 /** The offset position in points of the sprite in points. Calculated automatically by sprite sheet editors. */
 @property (nonatomic,readonly) CGPoint	offsetPosition;

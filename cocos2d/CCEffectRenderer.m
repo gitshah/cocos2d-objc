@@ -268,23 +268,51 @@ static GLKVector2 selectTexCoordPadding(CCEffectTexCoordSource tcSource, GLKVect
         // - Later pass into FB : Pad vertices, overwrite texture coordiates so they are lower-left (0,0) upper right (1, 1)
         // - Later pass into intermediate RT : Pad vertices, overwrite texture coordiates so they are lower-left (0,0) upper right (1, 1), add padding to RT, adjust ortho matrix
         //
-        
-        CCEffectTexCoordFunc tc1 = selectTexCoordFunc(renderPass.texCoord1Mapping, CCEffectTexCoordSource1, fromIntermediate, padMainTexCoords);
-        CCEffectTexCoordFunc tc2 = selectTexCoordFunc(renderPass.texCoord2Mapping, CCEffectTexCoordSource2, fromIntermediate, padMainTexCoords);
-        
-        CCSpriteVertexes paddedVerts = padVertices(sprite.vertexes, effect.padding, tc1, tc2);
-        if(YES || isnan(paddedVerts.bl.texCoord1.x) || isnan(paddedVerts.bl.texCoord1.y)) {
-            paddedVerts = (*sprite.vertexes);
-        }
-        [renderPassInputs setVertsWorkAround:&paddedVerts];
-        
-        renderPassInputs.texCoord1Center = GLKVector2Make((sprite.vertexes->br.texCoord1.s + sprite.vertexes->bl.texCoord1.s) * 0.5f, (sprite.vertexes->tr.texCoord1.t + sprite.vertexes->bl.texCoord1.t) * 0.5f);
-        renderPassInputs.texCoord1Extents = GLKVector2Make(fabsf(sprite.vertexes->br.texCoord1.s) * 0.5f, fabsf(sprite.vertexes->tr.texCoord1.t) * 0.5f);
-        renderPassInputs.texCoord2Center = renderPassInputs.texCoord1Center;
-////        GLKVector2Make((sprite.vertexes->tr.texCoord2.s + sprite.vertexes->bl.texCoord2.s) * 0.5f, (sprite.vertexes->tr.texCoord2.t + sprite.vertexes->bl.texCoord2.t) * 0.5f);
-        renderPassInputs.texCoord2Extents = renderPassInputs.texCoord1Extents;
-////        GLKVector2Make(fabsf(sprite.vertexes->tr.texCoord2.s - sprite.vertexes->bl.texCoord2.s) * 0.5f, fabsf(sprite.vertexes->tr.texCoord2.t - sprite.vertexes->bl.texCoord2.t) * 0.5f);
+        if(sprite->_renderTriangles) {
+            CCSpriteTriangleVertexes paddedVerts = (*sprite.triangleVertices);
+            [renderPassInputs setTriangleVertsWorkAround:&paddedVerts];
 
+            //TODO: Fill this correctly -- DEEP
+            float minS1 = MAX(sprite.triangleVertices->v1.texCoord1.s, MAX(sprite.triangleVertices->v2.texCoord1.s,
+                            sprite.triangleVertices->v3.texCoord1.s));
+            float maxT1 = MAX(sprite.triangleVertices->v1.texCoord1.t, MAX(sprite.triangleVertices->v2.texCoord1.t,
+                            sprite.triangleVertices->v3.texCoord1.t));
+            float minS2 = 0, maxT2 = 0;
+            if(sprite.triangleVertices->v1.texCoord1.s == minS1) {
+                minS2 = MAX(sprite.triangleVertices->v2.texCoord1.s, sprite.triangleVertices->v3.texCoord1.s);
+            } else if(sprite.triangleVertices->v2.texCoord1.s == minS1) {
+                minS2 = MAX(sprite.triangleVertices->v1.texCoord1.s, sprite.triangleVertices->v3.texCoord1.s);
+            } else {
+                minS2 = MAX(sprite.triangleVertices->v1.texCoord1.s, sprite.triangleVertices->v2.texCoord1.s);
+            }
+            if(sprite.triangleVertices->v1.texCoord1.t == maxT1) {
+                maxT2 = MAX(sprite.triangleVertices->v2.texCoord1.t, sprite.triangleVertices->v3.texCoord1.t);
+            } else if(sprite.triangleVertices->v2.texCoord1.t == maxT1) {
+                maxT2 = MAX(sprite.triangleVertices->v1.texCoord1.t, sprite.triangleVertices->v3.texCoord1.t);
+            } else {
+                maxT2 = MAX(sprite.triangleVertices->v1.texCoord1.t, sprite.triangleVertices->v2.texCoord1.t);
+            }
+            renderPassInputs.texCoord1Center = GLKVector2Make((sprite.triangleVertices->v1.texCoord1.s + sprite.triangleVertices->v2.texCoord1.s) * 0.5f, (sprite.triangleVertices->v3.texCoord1.t + sprite.triangleVertices->v2.texCoord1.t) * 0.5f);
+            renderPassInputs.texCoord1Extents = GLKVector2Make(fabsf(sprite.triangleVertices->v1.texCoord1.s) * 2, fabsf(sprite.triangleVertices->v3.texCoord1.t) * 2);
+            renderPassInputs.texCoord2Center = renderPassInputs.texCoord1Center;
+            renderPassInputs.texCoord2Extents = renderPassInputs.texCoord1Extents;
+        } else {
+            CCEffectTexCoordFunc tc1 = selectTexCoordFunc(renderPass.texCoord1Mapping, CCEffectTexCoordSource1, fromIntermediate, padMainTexCoords);
+            CCEffectTexCoordFunc tc2 = selectTexCoordFunc(renderPass.texCoord2Mapping, CCEffectTexCoordSource2, fromIntermediate, padMainTexCoords);
+            CCSpriteVertexes paddedVerts = padVertices(sprite.vertexes, effect.padding, tc1, tc2);
+            if(isnan(paddedVerts.bl.texCoord1.x) || isnan(paddedVerts.bl.texCoord1.y)) {
+                paddedVerts = (*sprite.vertexes);
+            }
+            [renderPassInputs setVertsWorkAround:&paddedVerts];
+
+            renderPassInputs.texCoord1Center = GLKVector2Make((sprite.vertexes->br.texCoord1.s + sprite.vertexes->bl.texCoord1.s) * 0.5f, (sprite.vertexes->tr.texCoord1.t + sprite.vertexes->bl.texCoord1.t) * 0.5f);
+            renderPassInputs.texCoord1Extents = GLKVector2Make(fabsf(sprite.vertexes->br.texCoord1.s) * 0.5f, fabsf(sprite.vertexes->tr.texCoord1.t) * 0.5f);
+//            renderPassInputs.texCoord2Center = renderPassInputs.texCoord1Center;
+            renderPassInputs.texCoord2Center = GLKVector2Make((sprite.vertexes->tr.texCoord2.s + sprite.vertexes->bl.texCoord2.s) * 0.5f, (sprite.vertexes->tr.texCoord2.t + sprite.vertexes->bl.texCoord2.t) * 0.5f);
+//            renderPassInputs.texCoord2Extents = renderPassInputs.texCoord1Extents;
+            renderPassInputs.texCoord2Extents = GLKVector2Make(fabsf(sprite.vertexes->tr.texCoord2.s - sprite.vertexes->bl.texCoord2.s) * 0.5f, fabsf(sprite.vertexes->tr.texCoord2.t - sprite.vertexes->bl.texCoord2.t) * 0.5f);
+
+        }
         renderPassInputs.needsClear = !toFramebuffer;
         renderPassInputs.shaderUniforms = uniforms;
         CCEffectRenderTarget *rt = nil;
@@ -440,38 +468,50 @@ CCEffectTexCoordFunc selectTexCoordFunc(CCEffectTexCoordMapping mapping, CCEffec
 
 CCSpriteVertexes padVertices(const CCSpriteVertexes *input, CGSize padding, CCEffectTexCoordFunc tc1, CCEffectTexCoordFunc tc2)
 {
-//    GLKVector2 tc1Padding = GLKVector2Make(padding.width * (input->br.texCoord1.s - input->bl.texCoord1.s) / (input->br.position.x - input->bl.position.x),
-//                                           padding.height * (input->tl.texCoord1.t - input->bl.texCoord1.t) / (input->tl.position.y - input->bl.position.y));
-//    GLKVector2 tc2Padding = GLKVector2Make(padding.width * (input->br.texCoord2.s - input->bl.texCoord2.s) / (input->br.position.x - input->bl.position.x),
-//                                           padding.height * (input->tl.texCoord2.t - input->bl.texCoord2.t) / (input->tl.position.y - input->bl.position.y));
-
-    GLKVector2 tc1Padding = GLKVector2Make(0, 0);
-    GLKVector2 tc2Padding = GLKVector2Make(0, 0);
-    GLKVector2 tempZero = GLKVector2Make(0, 0);
-
+    GLKVector2 tc1Padding = GLKVector2Make(padding.width * (input->br.texCoord1.s - input->bl.texCoord1.s) / (input->br.position.x - input->bl.position.x),
+                                           padding.height * (input->tl.texCoord1.t - input->bl.texCoord1.t) / (input->tl.position.y - input->bl.position.y));
+    GLKVector2 tc2Padding = GLKVector2Make(padding.width * (input->br.texCoord2.s - input->bl.texCoord2.s) / (input->br.position.x - input->bl.position.x),
+                                           padding.height * (input->tl.texCoord2.t - input->bl.texCoord2.t) / (input->tl.position.y - input->bl.position.y));
+//
+//    GLKVector2 tc1Padding = GLKVector2Make(0, 0);
+//    GLKVector2 tc2Padding = GLKVector2Make(0, 0);
+//    GLKVector2 tempZero = GLKVector2Make(0, 0);
 
     CCSpriteVertexes output;
+    output.bl.position = padVertexPosition(input->bl.position, GLKVector2Make(-padding.width, -padding.height));
+    output.bl.texCoord1 = transformTexCoords(tc1.transform, selectTexCoordPadding(tc1.source, GLKVector2Make(-tc1Padding.x, -tc1Padding.y), GLKVector2Make(-tc2Padding.x, -tc2Padding.y)), selectTexCoordSource(tc1.source, input->bl.texCoord1, input->bl.texCoord2, GLKVector2Make(0.0f, 0.0f)));
+    output.bl.texCoord2 = transformTexCoords(tc2.transform, selectTexCoordPadding(tc2.source, GLKVector2Make(-tc1Padding.x, -tc1Padding.y), GLKVector2Make(-tc2Padding.x, -tc2Padding.y)), selectTexCoordSource(tc2.source, input->bl.texCoord1, input->bl.texCoord2, GLKVector2Make(0.0f, 0.0f)));
 
-    output.bl.position = padVertexPosition(input->bl.position, tempZero);
-    output.bl.texCoord1 = transformTexCoords(tc1.transform, selectTexCoordPadding(tc1.source, tempZero, tempZero),
-            selectTexCoordSource(tc1.source, input->bl.texCoord1, input->bl.texCoord2, tempZero));
-    output.bl.texCoord2 = transformTexCoords(tc2.transform, selectTexCoordPadding(tc2.source, tempZero, tempZero),
-            selectTexCoordSource(tc2.source, input->bl.texCoord1, input->bl.texCoord2, tempZero));
+//    output.bl.position = padVertexPosition(input->bl.position, tempZero);
+//    output.bl.texCoord1 = transformTexCoords(tc1.transform, selectTexCoordPadding(tc1.source, tempZero, tempZero),
+//            selectTexCoordSource(tc1.source, input->bl.texCoord1, input->bl.texCoord2, tempZero));
+//    output.bl.texCoord2 = transformTexCoords(tc2.transform, selectTexCoordPadding(tc2.source, tempZero, tempZero),
+//            selectTexCoordSource(tc2.source, input->bl.texCoord1, input->bl.texCoord2, tempZero));
     output.bl.color = input->bl.color;
-    
-    output.br.position = padVertexPosition(input->br.position, tc1Padding);
-    output.br.texCoord1 = transformTexCoords(tc1.transform, selectTexCoordPadding(tc1.source, tempZero, tempZero), selectTexCoordSource(tc1.source, input->br.texCoord1, input->br.texCoord2, GLKVector2Make(1.0f, 0.0f)));
-    output.br.texCoord2 = transformTexCoords(tc2.transform, selectTexCoordPadding(tc2.source, tempZero, tempZero), selectTexCoordSource(tc2.source, input->br.texCoord1, input->br.texCoord2, GLKVector2Make(1.0f, 0.0f)));
+
+    output.br.position = padVertexPosition(input->br.position, GLKVector2Make( padding.width, -padding.height));
+    output.br.texCoord1 = transformTexCoords(tc1.transform, selectTexCoordPadding(tc1.source, GLKVector2Make( tc1Padding.x, -tc1Padding.y), GLKVector2Make( tc2Padding.x, -tc2Padding.y)), selectTexCoordSource(tc1.source, input->br.texCoord1, input->br.texCoord2, GLKVector2Make(1.0f, 0.0f)));
+    output.br.texCoord2 = transformTexCoords(tc2.transform, selectTexCoordPadding(tc2.source, GLKVector2Make( tc1Padding.x, -tc1Padding.y), GLKVector2Make( tc2Padding.x, -tc2Padding.y)), selectTexCoordSource(tc2.source, input->br.texCoord1, input->br.texCoord2, GLKVector2Make(1.0f, 0.0f)));
+//    output.br.position = padVertexPosition(input->br.position, tc1Padding);
+//    output.br.texCoord1 = transformTexCoords(tc1.transform, selectTexCoordPadding(tc1.source, tempZero, tempZero), selectTexCoordSource(tc1.source, input->br.texCoord1, input->br.texCoord2, GLKVector2Make(1.0f, 0.0f)));
+//    output.br.texCoord2 = transformTexCoords(tc2.transform, selectTexCoordPadding(tc2.source, tempZero, tempZero), selectTexCoordSource(tc2.source, input->br.texCoord1, input->br.texCoord2, GLKVector2Make(1.0f, 0.0f)));
     output.br.color = input->br.color;
-    
-    output.tr.position = padVertexPosition(input->tr.position, tc1Padding);
-    output.tr.texCoord1 = transformTexCoords(tc1.transform, selectTexCoordPadding(tc1.source, tempZero, tempZero), selectTexCoordSource(tc1.source, input->tr.texCoord1, input->tr.texCoord2, GLKVector2Make(1.0f, 1.0f)));
-    output.tr.texCoord2 = transformTexCoords(tc2.transform, selectTexCoordPadding(tc2.source, tempZero, tempZero), selectTexCoordSource(tc2.source, input->tr.texCoord1, input->tr.texCoord2, GLKVector2Make(1.0f, 1.0f)));
+
+    output.tr.position = padVertexPosition(input->tr.position, GLKVector2Make( padding.width,  padding.height));
+    output.tr.texCoord1 = transformTexCoords(tc1.transform, selectTexCoordPadding(tc1.source, GLKVector2Make( tc1Padding.x,  tc1Padding.y), GLKVector2Make( tc2Padding.x,  tc2Padding.y)), selectTexCoordSource(tc1.source, input->tr.texCoord1, input->tr.texCoord2, GLKVector2Make(1.0f, 1.0f)));
+    output.tr.texCoord2 = transformTexCoords(tc2.transform, selectTexCoordPadding(tc2.source, GLKVector2Make( tc1Padding.x,  tc1Padding.y), GLKVector2Make( tc2Padding.x,  tc2Padding.y)), selectTexCoordSource(tc2.source, input->tr.texCoord1, input->tr.texCoord2, GLKVector2Make(1.0f, 1.0f)));
+//    output.tr.position = padVertexPosition(input->tr.position, tc1Padding);
+//    output.tr.texCoord1 = transformTexCoords(tc1.transform, selectTexCoordPadding(tc1.source, tempZero, tempZero), selectTexCoordSource(tc1.source, input->tr.texCoord1, input->tr.texCoord2, GLKVector2Make(1.0f, 1.0f)));
+//    output.tr.texCoord2 = transformTexCoords(tc2.transform, selectTexCoordPadding(tc2.source, tempZero, tempZero), selectTexCoordSource(tc2.source, input->tr.texCoord1, input->tr.texCoord2, GLKVector2Make(1.0f, 1.0f)));
     output.tr.color = input->tr.color;
 
-    output.tl.position = padVertexPosition(input->tl.position, tc1Padding);
-    output.tl.texCoord1 = transformTexCoords(tc1.transform, selectTexCoordPadding(tc1.source, tempZero, tempZero), selectTexCoordSource(tc1.source, input->tl.texCoord1, input->tl.texCoord2, GLKVector2Make(0.0f, 1.0f)));
-    output.tl.texCoord2 = transformTexCoords(tc2.transform, selectTexCoordPadding(tc2.source, tempZero, tempZero), selectTexCoordSource(tc2.source, input->tl.texCoord1, input->tl.texCoord2, GLKVector2Make(0.0f, 1.0f)));
+    output.tl.position = padVertexPosition(input->tl.position, GLKVector2Make(-padding.width,  padding.height));
+    output.tl.texCoord1 = transformTexCoords(tc1.transform, selectTexCoordPadding(tc1.source, GLKVector2Make(-tc1Padding.x,  tc1Padding.y), GLKVector2Make(-tc2Padding.x,  tc2Padding.y)), selectTexCoordSource(tc1.source, input->tl.texCoord1, input->tl.texCoord2, GLKVector2Make(0.0f, 1.0f)));
+    output.tl.texCoord2 = transformTexCoords(tc2.transform, selectTexCoordPadding(tc2.source, GLKVector2Make(-tc1Padding.x,  tc1Padding.y), GLKVector2Make(-tc2Padding.x,  tc2Padding.y)), selectTexCoordSource(tc2.source, input->tl.texCoord1, input->tl.texCoord2, GLKVector2Make(0.0f, 1.0f)));
+
+//    output.tl.position = padVertexPosition(input->tl.position, tc1Padding);
+//    output.tl.texCoord1 = transformTexCoords(tc1.transform, selectTexCoordPadding(tc1.source, tempZero, tempZero), selectTexCoordSource(tc1.source, input->tl.texCoord1, input->tl.texCoord2, GLKVector2Make(0.0f, 1.0f)));
+//    output.tl.texCoord2 = transformTexCoords(tc2.transform, selectTexCoordPadding(tc2.source, tempZero, tempZero), selectTexCoordSource(tc2.source, input->tl.texCoord1, input->tl.texCoord2, GLKVector2Make(0.0f, 1.0f)));
     output.tl.color = input->tl.color;
 
     return output;

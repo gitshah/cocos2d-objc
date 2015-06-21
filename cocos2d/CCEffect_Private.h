@@ -118,6 +118,7 @@ typedef NS_ENUM(NSUInteger, CCEffectTexCoordMapping)
 @property (nonatomic, strong) CCRenderer* renderer;
 @property (nonatomic, strong) CCSprite *sprite;
 @property (nonatomic, assign) CCSpriteVertexes verts;
+@property (nonatomic, assign) CCSpriteTriangleVertexes triangleVertices;
 @property (nonatomic, strong) CCTexture *previousPassTexture;
 @property (nonatomic, assign) GLKMatrix4 transform;
 @property (nonatomic, assign) GLKMatrix4 ndcToNodeLocal;
@@ -128,8 +129,10 @@ typedef NS_ENUM(NSUInteger, CCEffectTexCoordMapping)
 @property (nonatomic, strong) NSMutableDictionary* shaderUniforms;
 @property (nonatomic, strong) NSDictionary* uniformTranslationTable;
 @property (nonatomic, assign) BOOL needsClear;
+@property (nonatomic, assign) BOOL renderTriangles;
 
 -(void)setVertsWorkAround:(CCSpriteVertexes*)verts;
+-(void)setTriangleVertsWorkAround:(CCSpriteTriangleVertexes*)triangleVertexes;
 
 @end
 
