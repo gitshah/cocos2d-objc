@@ -273,27 +273,31 @@ static GLKVector2 selectTexCoordPadding(CCEffectTexCoordSource tcSource, GLKVect
             [renderPassInputs setTriangleVertsWorkAround:&paddedVerts];
 
             //TODO: Fill this correctly -- DEEP
-            float minS1 = MAX(sprite.triangleVertices->v1.texCoord1.s, MAX(sprite.triangleVertices->v2.texCoord1.s,
+            float maxS1 = MAX(sprite.triangleVertices->v1.texCoord1.s, MAX(sprite.triangleVertices->v2.texCoord1.s,
                             sprite.triangleVertices->v3.texCoord1.s));
             float maxT1 = MAX(sprite.triangleVertices->v1.texCoord1.t, MAX(sprite.triangleVertices->v2.texCoord1.t,
                             sprite.triangleVertices->v3.texCoord1.t));
+            float minS1 = MIN(sprite.triangleVertices->v1.texCoord1.s, MIN(sprite.triangleVertices->v2.texCoord1.s,
+                            sprite.triangleVertices->v3.texCoord1.s));
+            float minT1 = MIN(sprite.triangleVertices->v1.texCoord1.t, MIN(sprite.triangleVertices->v2.texCoord1.t,
+                            sprite.triangleVertices->v3.texCoord1.t));
             float minS2 = 0, maxT2 = 0;
-            if(sprite.triangleVertices->v1.texCoord1.s == minS1) {
-                minS2 = MAX(sprite.triangleVertices->v2.texCoord1.s, sprite.triangleVertices->v3.texCoord1.s);
-            } else if(sprite.triangleVertices->v2.texCoord1.s == minS1) {
-                minS2 = MAX(sprite.triangleVertices->v1.texCoord1.s, sprite.triangleVertices->v3.texCoord1.s);
-            } else {
-                minS2 = MAX(sprite.triangleVertices->v1.texCoord1.s, sprite.triangleVertices->v2.texCoord1.s);
-            }
-            if(sprite.triangleVertices->v1.texCoord1.t == maxT1) {
-                maxT2 = MAX(sprite.triangleVertices->v2.texCoord1.t, sprite.triangleVertices->v3.texCoord1.t);
-            } else if(sprite.triangleVertices->v2.texCoord1.t == maxT1) {
-                maxT2 = MAX(sprite.triangleVertices->v1.texCoord1.t, sprite.triangleVertices->v3.texCoord1.t);
-            } else {
-                maxT2 = MAX(sprite.triangleVertices->v1.texCoord1.t, sprite.triangleVertices->v2.texCoord1.t);
-            }
-            renderPassInputs.texCoord1Center = GLKVector2Make((sprite.triangleVertices->v1.texCoord1.s + sprite.triangleVertices->v2.texCoord1.s) * 0.5f, (sprite.triangleVertices->v3.texCoord1.t + sprite.triangleVertices->v2.texCoord1.t) * 0.5f);
-            renderPassInputs.texCoord1Extents = GLKVector2Make(fabsf(sprite.triangleVertices->v1.texCoord1.s) * 2, fabsf(sprite.triangleVertices->v3.texCoord1.t) * 2);
+//            if(sprite.triangleVertices->v1.texCoord1.s == maxS1) {
+//                minS2 = MAX(sprite.triangleVertices->v2.texCoord1.s, sprite.triangleVertices->v3.texCoord1.s);
+//            } else if(sprite.triangleVertices->v2.texCoord1.s == maxS1) {
+//                minS2 = MAX(sprite.triangleVertices->v1.texCoord1.s, sprite.triangleVertices->v3.texCoord1.s);
+//            } else {
+//                minS2 = MAX(sprite.triangleVertices->v1.texCoord1.s, sprite.triangleVertices->v2.texCoord1.s);
+//            }
+//            if(sprite.triangleVertices->v1.texCoord1.t == maxT1) {
+//                maxT2 = MAX(sprite.triangleVertices->v2.texCoord1.t, sprite.triangleVertices->v3.texCoord1.t);
+//            } else if(sprite.triangleVertices->v2.texCoord1.t == maxT1) {
+//                maxT2 = MAX(sprite.triangleVertices->v1.texCoord1.t, sprite.triangleVertices->v3.texCoord1.t);
+//            } else {
+//                maxT2 = MAX(sprite.triangleVertices->v1.texCoord1.t, sprite.triangleVertices->v2.texCoord1.t);
+//            }
+            renderPassInputs.texCoord1Center = GLKVector2Make((maxS1 + minS2) * 0.5f, (maxT1 + minT1) * 0.5f);
+            renderPassInputs.texCoord1Extents = GLKVector2Make(fabsf(maxS1) * 0.5f, fabsf(maxT1) * 0.5f);
             renderPassInputs.texCoord2Center = renderPassInputs.texCoord1Center;
             renderPassInputs.texCoord2Extents = renderPassInputs.texCoord1Extents;
         } else {
